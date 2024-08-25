@@ -3,7 +3,7 @@ const mongoose = require ('mongoose')
 //Schema des conditions pour donner une rate
 const ratingSchema = mongoose.Schema ({
     userId:{ type: String, required: true},
-    grade: { type: Number, required: true, min: 1}
+    grade: { type: Number, required: true, min: 1 max:5}
 })
 
 //Schema du formulaire du book
