@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const userCtrl = require('../controllers/user-controllers')
+const userCtrl = require('../controllers/user-controllers');
 
+// //Permet de s'inscrire ***** 1
 router.post('/signup', userCtrl.signup);
-router.post('/login', userCtrl.login)
+// //Permet de se log ***** 2
+router.post('/login', userCtrl.login);
 
 module.exports = router;
