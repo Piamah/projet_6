@@ -19,6 +19,7 @@ router.post('/', auth, multer, bookCtrl.createBook);
 //Permet de récup les books ***** 3
 router.get('/', bookCtrl.getAllBooks);
 // //Permet de donner une note à un bouquin? ***** 9
-// router.post('/:id/rating', bookCtrl.rateBook)
+router.post('/:id/rating', auth, bookCtrl.rateBook)
   
-  module.exports = router;
+
+module.exports = router;

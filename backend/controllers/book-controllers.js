@@ -37,9 +37,9 @@ exports.modifyBook = (req, res, next) => {
   .catch((error) => {
       res.status(400).json({ error });
   });
-    Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-    .then(() => res.status(200).json ({ message : 'Livre modifié'}))
-    .catch(error => res.status(400).json({ error }));
+    // Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
+    // .then(() => res.status(200).json ({ message : 'Livre modifié'}))
+    // .catch(error => res.status(400).json({ error }));
   };
 
 exports.deleteBook = (req, res, next) => {
@@ -70,12 +70,46 @@ exports.deleteBook = (req, res, next) => {
 
 exports.bookArray = (req, res, next) => {
     Book.find()
-    .sort((a, b) => b.averageRating - a.averageRating)
+    .sort({ averageRating : -1})
     .limit (3)
     .then((books) => res.status(200).json(books))
     .catch(error => res.status(400).json({ error }))
   }
 
-// exports.rateBook= (req, res, next) => {
+exports.rateBook= (req, res, next) => {
+  console.log("Body reçu", req.body);
+  
+    const { rating } = req.body;
+    if (rating < 1 || rating > 5) {
+      res.status(401).json({ error : 'La note doit être comprise entre 1 et 5'});
+    }
+    
+    Book.findOne ({ _id: req.params.id})
+    .then((book) => {
+      if (!book) {
+        res.status(404).json({ error : 'Le livre que vous demandez est introuvable'});
+      }
 
-// }
+      const userId = req.auth.userId;
+      const alreadyRated = book.rating.some(note => note.userId === userId)
+
+      if (alreadyRated) {
+        return res.status(401).json({ error : 'Vous avez déjà noté ce livre'})
+      }
+
+      book.rating.push({ userId, grade: rating })
+
+      book.save ()
+      .then((books) => res.status(200).json({ message : 'Votre évaluation a été ajoutée avec succès!'}))
+      .catch(error => res.status(400).json({ error : 'Une erreur a été rencontrée sur votre évaluation' }))
+    })
+    
+    .catch(error => res.status(400).json({ error : 'Nous avons rencontré un problème lors de la récupération du livre.' }))
+
+}
+
+
+//si ok, récupérer (vérifier) si la personne a déja noté le livre ou pas car pas censé etre le K
+//si c'est pas le cas, vérifier (fouiller ds le livre ds le tableau ratings s'il y a l'id de l'user, si oui, il
+//a déja noté donc erreur)
+//si tout ok, remplir le tableau (push) id user et note
