@@ -13,13 +13,13 @@ router.put('/:id', auth, multer, bookCtrl.modifyBook);
 //Permet de supprimer un book ***** 8
 router.delete('/:id', auth, bookCtrl.deleteBook);
 // Permet de récupérer un book ***** 4
-router.get('/:id', bookCtrl.getOneBook );
+router.get('/:id', bookCtrl.getOneBook);
 //Permet d'ajouter un book ***** 6
 router.post('/', auth, multer, bookCtrl.createBook);
 //Permet de récup les books ***** 3
 router.get('/', bookCtrl.getAllBooks);
-// //Permet de donner une note à un bouquin? ***** 9
+// //Permet de donner une note à un bouquin ***** 9
 router.post('/:id/rating', auth, bookCtrl.rateBook)
-  
+
 
 module.exports = router;
