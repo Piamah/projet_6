@@ -1,4 +1,5 @@
 const Book = require('../models/Book-models');
+const fs = require('fs');
 
 exports.createBook = (req, res, next) => {
   const bookObject = JSON.parse(req.body.book);
@@ -29,6 +30,12 @@ exports.modifyBook = (req, res, next) => {
       if (book.userId != req.auth.userId) {
         res.status(401).json({ message: 'Non autorisé' });
       } else {
+        if (req.file) {
+          const oldImage = book.imageUrl.split("/images/")[1];
+          fs.unlink(`images/${oldImage}`, (err) => {
+            if (err) console.error("Erreur lors de la suppression de l'image:", err);
+          });
+        }
         Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
           .then(() => res.status(200).json({ message: 'Objet modifié!' }))
           .catch(error => res.status(401).json({ error }));
@@ -37,16 +44,26 @@ exports.modifyBook = (req, res, next) => {
     .catch((error) => {
       res.status(400).json({ error });
     });
-  // Book.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-  // .then(() => res.status(200).json ({ message : 'Livre modifié'}))
-  // .catch(error => res.status(400).json({ error }));
 };
 
 exports.deleteBook = (req, res, next) => {
-  Book.deleteOne({ _id: req.params.id })
-    .then(() => res.status(200).json({ message: 'Livre supprimé' }))
-    .catch(error => res.status(400).json({ error }));
-}
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      if (book.userId !== req.auth.userId) {
+        return res.status(401).json({ message: "Vous n'avez pas l'autorisation" });
+      }
+      const filename = book.imageUrl.split("/images/")[1];
+      fs.unlink(`images/${filename}`, (err) => {
+        if (err) console.error("Erreur lors de la suppression de l'image:", err);
+      });
+      // console.log(filename);
+
+      Book.deleteOne({ _id: req.params.id })
+        .then(() => res.status(200).json({ message: "Livre supprimé !" }))
+        .catch((error) => res.status(401).json({ error }));
+    })
+    .catch((error) => res.status(500).json({ error }));
+};
 
 exports.getOneBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
@@ -55,14 +72,11 @@ exports.getOneBook = (req, res, next) => {
 };
 
 exports.getAllBooks = (req, res, next) => {
-  console.log("getAllBooks called");
   Book.find()
     .then(books => {
-      console.log("Books found:", books);
       res.status(200).json(books);
     })
     .catch(error => {
-      console.log("Error fetching books:", error);
       res.status(400).json({ error });
     });
 };
@@ -96,27 +110,26 @@ exports.rateBook = (req, res, next) => {
         return res.status(400).json({ error: 'Vous avez déjà noté ce livre' });
       }
 
-      book.ratings.push({ userId, grade: rating });
+      book.ratings.push({ userId: userId, grade: rating });
 
       const totalRatings = book.ratings.length;
       const allGrades = book.ratings.reduce((acc, rating) => acc + rating.grade, 0);
-      const averageRating = allGrades / totalRatings;
+      let averageRating = allGrades / totalRatings;
+
+      averageRating = Math.round(averageRating * 10) / 10;
+      // averageRating = parseFloast(averageRating.toFixed(1));
 
       book.averageRating = averageRating;
 
       console.log('auteur:', book.author);
       console.log('note moyenne :', book.averageRating);
+      console.log(book._id);
+      console.log(book.id);
 
       book.save()
-        .then(() => res.status(200).json({ message: 'Votre évaluation a été ajoutée avec succès!' }))
+        .then(() => res.status(200).json(book))
         .catch(error => res.status(400).json({ error: 'Une erreur a été rencontrée sur votre évaluation' }));
     })
     .catch(error => res.status(400).json({ error: 'Nous avons rencontré un problème lors de la récupération du livre.' }));
 };
 
-
-
-//si ok, récupérer (vérifier) si la personne a déja noté le livre ou pas car pas censé etre le K
-//si c'est pas le cas, vérifier (fouiller ds le livre ds le tableau ratings s'il y a l'id de l'user, si oui, il
-//a déja noté donc erreur)
-//si tout ok, remplir le tableau (push) id user et note
