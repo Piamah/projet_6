@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const userCtrl = require('../controllers/user-controllers');
+const userCtrl = require('../controllers/user');
 
 // //Permet de s'inscrire ***** 1
 router.post('/signup', userCtrl.signup);

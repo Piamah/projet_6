@@ -16,8 +16,8 @@ app.use(cors());
 
 
 //Routes
-const bookRoute = require('./routes/book-routes');
-const userRoutes = require('./routes/user-routes');
+const bookRoute = require('./routes/book');
+const userRoutes = require('./routes/user');
 
 //MongoDB
 mongoose.connect(process.env.MONGO)
@@ -31,9 +31,6 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }))
 app.use('/api/books', bookRoute);
 app.use('/api/auth', userRoutes);
 app.use('/images', express.static(path.join(__dirname, 'images')))
-
-// Faire un champ tableau notes w/ : un tableau a 2 entrées avec userId + note qu'il a mise 
-// (stock différentes notes pr 1 mm livre + sur que la pers ne vote pas 2x)
 
 
 module.exports = app;

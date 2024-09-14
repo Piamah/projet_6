@@ -1,6 +1,8 @@
-const Book = require('../models/Book-models');
+const Book = require('../models/book');
 const fs = require('fs');
 
+
+//Création d'un bouquin
 exports.createBook = (req, res, next) => {
   const bookObject = JSON.parse(req.body.book);
   delete bookObject._id;
@@ -16,7 +18,7 @@ exports.createBook = (req, res, next) => {
     .catch(error => res.status(400).json({ error }));
 };
 
-
+//Modification d'un bouquin
 exports.modifyBook = (req, res, next) => {
   const bookObject = req.file ? {
     ...JSON.parse(req.body.book),
@@ -46,6 +48,7 @@ exports.modifyBook = (req, res, next) => {
     });
 };
 
+//Suppression d'un bouquin
 exports.deleteBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then((book) => {
@@ -56,7 +59,6 @@ exports.deleteBook = (req, res, next) => {
       fs.unlink(`images/${filename}`, (err) => {
         if (err) console.error("Erreur lors de la suppression de l'image:", err);
       });
-      // console.log(filename);
 
       Book.deleteOne({ _id: req.params.id })
         .then(() => res.status(200).json({ message: "Livre supprimé !" }))
@@ -65,12 +67,14 @@ exports.deleteBook = (req, res, next) => {
     .catch((error) => res.status(500).json({ error }));
 };
 
+//Récupérer un bouquin
 exports.getOneBook = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
     .then((book) => res.status(200).json(book))
     .catch((error) => res.status(404).json({ error }));
 };
 
+//Récupérer tous les bouquins
 exports.getAllBooks = (req, res, next) => {
   Book.find()
     .then(books => {
@@ -81,7 +85,7 @@ exports.getAllBooks = (req, res, next) => {
     });
 };
 
-
+//Tableau des meilleurs bouquins
 exports.bookArray = (req, res, next) => {
   Book.find()
     .sort({ averageRating: -1 })
@@ -90,6 +94,7 @@ exports.bookArray = (req, res, next) => {
     .catch(error => res.status(400).json({ error }))
 }
 
+//Noter un bouquin
 exports.rateBook = (req, res, next) => {
   const { rating } = req.body;
 
@@ -117,14 +122,8 @@ exports.rateBook = (req, res, next) => {
       let averageRating = allGrades / totalRatings;
 
       averageRating = Math.round(averageRating * 10) / 10;
-      // averageRating = parseFloast(averageRating.toFixed(1));
 
       book.averageRating = averageRating;
-
-      console.log('auteur:', book.author);
-      console.log('note moyenne :', book.averageRating);
-      console.log(book._id);
-      console.log(book.id);
 
       book.save()
         .then(() => res.status(200).json(book))

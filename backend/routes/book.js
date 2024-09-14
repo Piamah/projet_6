@@ -4,7 +4,7 @@ const router = express.Router();
 const auth = require('../middleware/auth')
 const { upload, convertToWebp } = require('../middleware/multer-config')
 
-const bookCtrl = require('../controllers/book-controllers')
+const bookCtrl = require('../controllers/book')
 
 // //Permet de renvoyer un tableau de 3 livres ayant la meilleure note ***** 5
 router.get('/bestrating', bookCtrl.bookArray);
